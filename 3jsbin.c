@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <unistd.h>
 
 unsigned char *buffer;
@@ -24,121 +25,136 @@ uint32_t quadsmoothuvs;
 
 unsigned char parseUChar8(unsigned int offset)
 {
-  return buffer[offset];
+    return buffer[offset];
 }
 
 char parseChar8(unsigned int offset)
 {
-  return (char)buffer[offset];
+    return (char)buffer[offset];
 }
 
 uint32_t parseUInt32(unsigned int offset)
 {
-  return ((buffer[offset+3]<<24)|(buffer[offset+2]<<16)|(buffer[offset+1]<<8)|buffer[offset]);
+    return ((buffer[offset+3]<<24)|(buffer[offset+2]<<16)|(buffer[offset+1]<<8)|buffer[offset]);
 }
 
 float parseFloat32(unsigned int offset)
 {
-  union { float f; unsigned char b[4]; } u;
+    union { float f; unsigned char b[4]; } u;
 
-  u.b[3]=buffer[offset+3];
-  u.b[2]=buffer[offset+2];
-  u.b[1]=buffer[offset+1];
-  u.b[0]=buffer[offset+0];
+    u.b[3]=buffer[offset+3];
+    u.b[2]=buffer[offset+2];
+    u.b[1]=buffer[offset+1];
+    u.b[0]=buffer[offset+0];
 
-  return u.f;
+    return u.f;
 }
 
 uint16_t parseUShort16(unsigned int offset)
 {
-  return ((buffer[offset+1]<<8)|buffer[offset]);
+    return ((buffer[offset+1]<<8)|buffer[offset]);
 }
 
 unsigned char parsemetadata()
 {
-  int i;
+    int i;
 
-  fprintf(stderr, "signature = \"");
-  for (i=0; i<12; i++)
-    fprintf(stderr, "%c", buffer[i]);
-  fprintf(stderr, "\"\n");
+    fprintf(stderr, "signature = \"");
+    for (i=0; i<12; i++)
+        fprintf(stderr, "%c", buffer[i]);
+    fprintf(stderr, "\"\n");
 
-  // All data is little-endian
+    // All data is little-endian
 
-  fprintf(stderr, "header_bytes = %d\n\n", parseUChar8(offs+12)); // 64
+    fprintf(stderr, "header_bytes = %d\n\n", parseUChar8(offs+12)); // 64
 
-  fprintf(stderr, "vertex_coordinate_bytes = %d\n", parseUChar8(offs+13)); // 4
-  fprintf(stderr, "normal_coordinate_bytes = %d\n", parseUChar8(offs+14)); // 1
-  fprintf(stderr, "uv_coordinate_bytes = %d\n\n", parseUChar8(offs+15)); // 4
+    fprintf(stderr, "vertex_coordinate_bytes = %d\n", parseUChar8(offs+13)); // 4
+    fprintf(stderr, "normal_coordinate_bytes = %d\n", parseUChar8(offs+14)); // 1
+    fprintf(stderr, "uv_coordinate_bytes = %d\n\n", parseUChar8(offs+15)); // 4
 
-  fprintf(stderr, "vertex_index_bytes = %d\n", parseUChar8(offs+16)); // 4
-  fprintf(stderr, "normal_index_bytes = %d\n", parseUChar8(offs+17)); // 4
-  fprintf(stderr, "uv_index_bytes = %d\n", parseUChar8(offs+18)); // 4
-  fprintf(stderr, "material_index_bytes = %d\n\n", parseUChar8(offs+19)); // 2
+    fprintf(stderr, "vertex_index_bytes = %d\n", parseUChar8(offs+16)); // 4
+    fprintf(stderr, "normal_index_bytes = %d\n", parseUChar8(offs+17)); // 4
+    fprintf(stderr, "uv_index_bytes = %d\n", parseUChar8(offs+18)); // 4
+    fprintf(stderr, "material_index_bytes = %d\n\n", parseUChar8(offs+19)); // 2
 
-  fprintf(stderr, "nvertices = 12 x %d\n", parseUInt32(offs+20)); vertices=parseUInt32(offs+20);
-  fprintf(stderr, "nnormals = 3 x %d\n", parseUInt32(offs+20+(4*1))); normals=parseUInt32(offs+20+(4*1));
-  fprintf(stderr, "nuvs = 8 x %d\n\n", parseUInt32(offs+20+(4*2))); uvs=parseUInt32(offs+20+(4*2));
+    fprintf(stderr, "nvertices = 12 x %d\n", parseUInt32(offs+20)); vertices=parseUInt32(offs+20);
+    fprintf(stderr, "nnormals = 3 x %d\n", parseUInt32(offs+20+(4*1))); normals=parseUInt32(offs+20+(4*1));
+    fprintf(stderr, "nuvs = 8 x %d\n\n", parseUInt32(offs+20+(4*2))); uvs=parseUInt32(offs+20+(4*2));
 
-  fprintf(stderr, "ntri_flat = 14 x %d\n", parseUInt32(offs+20+(4*3))); triflat=parseUInt32(offs+20+(4*3));
-  fprintf(stderr, "ntri_smooth = 26 x %d\n", parseUInt32(offs+20+(4*4))); trismooth=parseUInt32(offs+20+(4*4));
-  fprintf(stderr, "ntri_flat_uv = 26 x %d\n", parseUInt32(offs+20+(4*5))); triflatuvs=parseUInt32(offs+20+(4*5));
-  fprintf(stderr, "ntri_smooth_uv = 38 x %d\n\n", parseUInt32(offs+20+(4*6))); trismoothuvs=parseUInt32(offs+20+(4*6));
+    fprintf(stderr, "ntri_flat = 14 x %d\n", parseUInt32(offs+20+(4*3))); triflat=parseUInt32(offs+20+(4*3));
+    fprintf(stderr, "ntri_smooth = 26 x %d\n", parseUInt32(offs+20+(4*4))); trismooth=parseUInt32(offs+20+(4*4));
+    fprintf(stderr, "ntri_flat_uv = 26 x %d\n", parseUInt32(offs+20+(4*5))); triflatuvs=parseUInt32(offs+20+(4*5));
+    fprintf(stderr, "ntri_smooth_uv = 38 x %d\n\n", parseUInt32(offs+20+(4*6))); trismoothuvs=parseUInt32(offs+20+(4*6));
 
-  fprintf(stderr, "nquad_flat = 18 x %d\n", parseUInt32(offs+20+(4*7))); quadflat=parseUInt32(offs+20+(4*7));
-  fprintf(stderr, "nquad_smooth = 34 x %d\n", parseUInt32(offs+20+(4*8))); quadsmooth=parseUInt32(offs+20+(4*8));
-  fprintf(stderr, "nquad_flat_uv = 34 x %d\n", parseUInt32(offs+20+(4*9))); quadflatuvs=parseUInt32(offs+20+(4*9));
-  fprintf(stderr, "nquad_smooth_uv = 50 x %d\n\n", parseUInt32(offs+20+(4*10))); quadsmoothuvs=parseUInt32(offs+20+(4*10));
+    fprintf(stderr, "nquad_flat = 18 x %d\n", parseUInt32(offs+20+(4*7))); quadflat=parseUInt32(offs+20+(4*7));
+    fprintf(stderr, "nquad_smooth = 34 x %d\n", parseUInt32(offs+20+(4*8))); quadsmooth=parseUInt32(offs+20+(4*8));
+    fprintf(stderr, "nquad_flat_uv = 34 x %d\n", parseUInt32(offs+20+(4*9))); quadflatuvs=parseUInt32(offs+20+(4*9));
+    fprintf(stderr, "nquad_smooth_uv = 50 x %d\n\n", parseUInt32(offs+20+(4*10))); quadsmoothuvs=parseUInt32(offs+20+(4*10));
 
-  return parseUChar8(12);
+    return parseUChar8(12);
 }
 
 unsigned int handlePadding(unsigned int n)
 {
-  return ( n % 4 ) ? ( 4 - n % 4 ) : 0;
+    return ( n % 4 ) ? ( 4 - n % 4 ) : 0;
 }
 
 int main(int argc, char **argv)
 {
-  FILE *fp;
-  size_t flen;
-  unsigned char headerlen;
-  uint32_t i;
-  uint32_t vt;
-  struct stat st;
+    FILE *fp, *fp_out;
+    size_t flen;
+    unsigned char headerlen;
+    uint32_t i;
+    struct stat st;
+    char output_filename[256];
 
-  if (argc!=2)
-  {
-    fprintf(stderr, "Specify .bin file on command line\n");
-    return 1;
-  }
+    if (argc != 2)
+    {
+        fprintf(stderr, "Specify .bin file on command line\n");
+        return 1;
+    }
 
-  if (stat(argv[1], &st)!=0)
-  {
-    fprintf(stderr, "Unable to check file '%s'\n", argv[1]);
-    return 1;
-  }
+    if (stat(argv[1], &st) != 0)
+    {
+        fprintf(stderr, "Unable to check file '%s'\n", argv[1]);
+        return 1;
+    }
 
-  buffer=malloc(st.st_size);
+    // Prepare output file name by replacing extension
+    strcpy(output_filename, argv[1]);
+    char *dot = strrchr(output_filename, '.');
+    if (dot != NULL) {
+        strcpy(dot, ".obj");
+    } else {
+        strcat(output_filename, ".obj");
+    }
 
-  if (buffer==NULL)
-  {
-    fprintf(stderr, "Unable to allocate %ld bytes for buffer\n", st.st_size);
-    return 1;
-  }
+    // Open output file
+    fp_out = fopen(output_filename, "w");
+    if (fp_out == NULL) {
+        fprintf(stderr, "Unable to open output file '%s'\n", output_filename);
+        return 2;
+    }
 
-  fp=fopen(argv[1], "r");
-  if (fp!=NULL)
-  {
-    flen=fread(buffer, 1, st.st_size, fp);
-    fclose(fp);
-  }
-  else
-  {
-    fprintf(stderr, "Unable to open .bin file\n");
-    free(buffer);
-    return 2;
-  }
+    buffer = (unsigned char *)malloc(st.st_size);
+    if (buffer == NULL)
+    {
+        fprintf(stderr, "Unable to allocate %ld bytes for buffer\n", st.st_size);
+        return 1;
+    }
+
+    fp = fopen(argv[1], "r");
+    if (fp != NULL)
+    {
+        flen = fread(buffer, 1, st.st_size, fp);
+        fclose(fp);
+    }
+    else
+    {
+        fprintf(stderr, "Unable to open .bin file\n");
+        free(buffer);
+        return 2;
+    }
 
   fprintf(stderr, "File size : %d\n", flen);
 
@@ -147,7 +163,7 @@ int main(int argc, char **argv)
   offs+=headerlen;
 
   cur_m=UINT16_MAX;
-  fprintf(stdout, "mtllib tex.mtl\n");
+  fprintf(fp_out, "mtllib tex.mtl\n");
 
   // 1. vertices
   // ------------
@@ -162,7 +178,7 @@ int main(int argc, char **argv)
     y=parseFloat32(offs+4);
     z=parseFloat32(offs+8);
 
-    fprintf(stdout, "v %f %f %f\n", x, y, z);
+    fprintf(fp_out, "v %f %f %f\n", x, y, z);
     offs+=(3*4);
   }
 
@@ -181,7 +197,7 @@ int main(int argc, char **argv)
     y=parseChar8(offs+1);
     z=parseChar8(offs+2);
 
-    fprintf(stdout, "vn %d %d %d\n", x, y, z);
+    fprintf(fp_out, "vn %d %d %d\n", x, y, z);
     offs+=3;
   }
 
@@ -202,7 +218,7 @@ int main(int argc, char **argv)
     u=parseFloat32(offs+0);
     v=parseFloat32(offs+4);
 
-    fprintf(stdout, "vt %f %f\n", u, 1-v); // Flipped Y
+    fprintf(fp_out, "vt %f %f\n", u, 1-v); // Flipped Y
     offs+=8;
   }
 
@@ -230,11 +246,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(triflat*12)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d %d %d\n", a+1, b+1, c+1);
+      fprintf(fp_out, "f %d %d %d\n", a+1, b+1, c+1);
     }
 
     offs+=((12+2)*triflat);
@@ -273,11 +289,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(trismooth*12)+(trismooth*12)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d//%d %d//%d %d//%d\n", a+1, na+1, b+1, nb+1, c+1, nc+1);
+      fprintf(fp_out, "f %d//%d %d//%d %d//%d\n", a+1, na+1, b+1, nb+1, c+1, nc+1);
     }
 
     offs+=((12+12+2)*trismooth);
@@ -318,11 +334,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(triflatuvs*12)+(triflatuvs*12)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d/%d %d/%d %d/%d\n", a+1, ua+1, b+1, ub+1, c+1, uc+1);
+      fprintf(fp_out, "f %d/%d %d/%d %d/%d\n", a+1, ua+1, b+1, ub+1, c+1, uc+1);
     }
 
     offs+=((12+12+2)*triflatuvs);
@@ -372,11 +388,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(trismoothuvs*12)+(trismoothuvs*12)+(trismoothuvs*12)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d/%d/%d %d/%d/%d %d/%d/%d\n", a+1, ua+1, na+1, b+1, ub+1, nb+1, c+1, uc+1, nc+1);
+      fprintf(fp_out, "f %d/%d/%d %d/%d/%d %d/%d/%d\n", a+1, ua+1, na+1, b+1, ub+1, nb+1, c+1, uc+1, nc+1);
     }
 
     offs+=((12+12+12+2)*trismoothuvs);
@@ -410,11 +426,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(16*quadflat)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d %d %d %d\n", a+1, b+1, c+1, d+1);
+      fprintf(fp_out, "f %d %d %d %d\n", a+1, b+1, c+1, d+1);
     }
 
     offs+=((16+2)*quadflat);
@@ -457,11 +473,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(16*quadsmooth)+(16*quadsmooth)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d//%d %d//%d %d//%d %d//%d\n", a+1, na+1, b+1, nb+1, c+1, nc+1, d+1, nd+1);
+      fprintf(fp_out, "f %d//%d %d//%d %d//%d %d//%d\n", a+1, na+1, b+1, nb+1, c+1, nc+1, d+1, nd+1);
     }
 
     offs+=((16+16+2)*quadsmooth);
@@ -504,11 +520,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(16*quadflatuvs)+(16*quadflatuvs)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d/%d %d/%d %d/%d %d/%d\n", a+1, ua+1, b+1, ub+1, c+1, uc+1, d+1, ud+1);
+      fprintf(fp_out, "f %d/%d %d/%d %d/%d %d/%d\n", a+1, ua+1, b+1, ub+1, c+1, uc+1, d+1, ud+1);
     }
 
     offs+=((16+16+2)*quadflatuvs);
@@ -562,11 +578,11 @@ int main(int argc, char **argv)
       m=parseUShort16(startpos+(16*quadsmoothuvs)+(16*quadsmoothuvs)+(16*quadsmoothuvs)+(i*2));
       if (m!=cur_m)
       {
-        fprintf(stdout, "usemtl Texture_%d\n", m);
+        fprintf(fp_out, "usemtl Texture_%d\n", m);
         cur_m=m;
       }
 
-      fprintf(stdout, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d\n", a+1, ua+1, na+1, b+1, ub+1, nb+1, c+1, uc+1, nc+1, d+1, ud+1, nd+1);
+      fprintf(fp_out, "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d\n", a+1, ua+1, na+1, b+1, ub+1, nb+1, c+1, uc+1, nc+1, d+1, ud+1, nd+1);
     }
 
     offs+=((16+16+16+2)*quadsmoothuvs);
@@ -575,7 +591,7 @@ int main(int argc, char **argv)
   }
 
   fprintf(stderr, "Offset: %d\n", offs);
-
+  fclose(fp_out);
   free(buffer);
   return 0;
 }

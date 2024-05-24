@@ -7,14 +7,14 @@ Processing data and statistics will be output to standard error.
 
 ## Syntax :
 
-`3jsbin <filename.bin> > <filename.obj>`
+`3jsbin <filename.bin>`
 
 ## Where :
 
  * `<filename.bin>` The three.js binary file
- * `<filename.obj>` The output wavefront .obj file
 
 ## Notes :
  * All values are assumed to be little-endian
+ * The .obj file will be output to the same directory
  * A default materials file (tex.mtl) will be added to the .obj
  * Material indexes are not processed and are instead allocated a number with prefix "Texture_"
